@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Search{% endblock %}
+
+{% block content %}
+<h2>Search</h2>
+
+<form action="{{ url_for('search') }}" method="get" style="display:flex;gap:.5rem;flex-wrap:wrap">
+  <!-- text input for keyword -->
+  <input type="text" name="q" value="{{ q or '' }}" placeholder="Try: airpods"
+         style="flex:1;min-width:220px;padding:.5rem" />
+
+  <!-- status filter -->
+  <select name="status" style="padding:.5rem">
+    <option value="" {{ '' == (status or '') and 'selected' or '' }}>Any status</option>
+    <option value="lost" {{ (status or '') == 'lost' and 'selected' or '' }}>Lost</option>
+    <option value="found" {{ (status or '') == 'found' and 'selected' or '' }}>Found</option>
+    <option value="resolved" {{ (status or '') == 'resolved' and 'selected' or '' }}>Resolved</option>
+  </select>
+
+  <button type="submit" style="padding:.5rem 1rem">Search</button>
+</form>
+
+{% if items is defined %}
+  <h3>Results ({{ items|length }})</h3>
+
+  {% if items|length == 0 %}
+    <p>No matches.</p>
+  {% else %}
+    <ul>
+      {# matches “Passing array data to templates” from notes #}
+      {% for it in items %}
+        <li>
+          <a href="{{ url_for('detail', post_id=it.sid) }}">
+            <strong>{{ it.title }}</strong>
+          </a>
+          — {{ it.status|default('unknown') }}
+          @ {{ it.location|default('unspecified') }}
+          {% if it.date_event %} • {{ it.date_event }}{% endif %}
+          {% if it.description %}<br><small>{{ it.description }}</small>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endif %}
+{% endblock %}
