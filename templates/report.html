@@ -1,6 +1,40 @@
 {% extends "base.html" %}
-{% block title %}Report{% endblock %}
+
+{% block title %}Report a Lost or Found Item{% endblock %}
+
 {% block content %}
-<h2>Report an item</h2>
-<p>TODO: form with: title, status (lost & found/Resolved), location, description, contact name/email, optional image URL.</p>
+<h2>Report a Lost or Found Item</h2>
+
+<form method="POST">
+    <label for="title">Title:</label><br>
+    <input type="text" id="title" name="title" required><br><br>
+
+    <label for="status">Status:</label><br>
+    <select name="status" id="status">
+        <option value="lost">Lost</option>
+        <option value="found">Found</option>
+    </select><br><br>
+
+    <label for="location">Location:</label><br>
+    <input type="text" id="location" name="location" required><br><br>
+
+    <label for="description">Description:</label><br>
+    <textarea id="description" name="description" rows="4"></textarea><br><br>
+
+    <label for="contact_name">Contact Name:</label><br>
+    <input type="text" id="contact_name" name="contact_name"><br><br>
+
+    <label for="contact_email">Contact Email:</label><br>
+    <input type="email" id="contact_email" name="contact_email" required><br><br>
+
+    <label for="image_url">Image URL (optional):</label><br>
+    <input type="text" id="image_url" name="image_url"><br><br>
+
+    <button type="submit">Submit</button>
+</form>
+
+{% if error %}
+    <p style="color:red;">{{ error }}</p>
+{% endif %}
+
 {% endblock %}
