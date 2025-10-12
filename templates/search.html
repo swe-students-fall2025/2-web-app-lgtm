@@ -14,7 +14,6 @@
     <option value="" {{ '' == (status or '') and 'selected' or '' }}>Any status</option>
     <option value="lost" {{ (status or '') == 'lost' and 'selected' or '' }}>Lost</option>
     <option value="found" {{ (status or '') == 'found' and 'selected' or '' }}>Found</option>
-    <option value="resolved" {{ (status or '') == 'resolved' and 'selected' or '' }}>Resolved</option>
   </select>
 
   <button type="submit" style="padding:.5rem 1rem">Search</button>
@@ -35,7 +34,7 @@
           </a>
           — {{ it.status|default('unknown') }}
           @ {{ it.location|default('unspecified') }}
-          {% if it.date_event %} • {{ it.date_event }}{% endif %}
+          {% if it.created_at %} • {{ it.created_at }}{% endif %}
           {% if it.description %}<br><small>{{ it.description }}</small>{% endif %}
         </li>
       {% endfor %}

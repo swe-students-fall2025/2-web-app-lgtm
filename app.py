@@ -22,7 +22,6 @@ def create_app():
         try:
             cxn = pymongo.MongoClient(uri, serverSelectionTimeoutMS=2000)
             db = cxn[dbname]
-            app.mongo = db
             cxn.admin.command("ping")
             print(" * Connected to MongoDB")
         except Exception as e:
@@ -80,10 +79,10 @@ def create_app():
         q = (request.args.get("q") or "").strip()
         status = (request.args.get("status") or "").strip().lower()
 
-        # criteria (implicit AND between keys)
         criteria = {}
         if q:
-            rx = {"$regex": q, "$options": "i"}  # case-insensitive
+            # case-insensitive
+            rx = {"$regex": q, "$options": "i"}  
             criteria["$or"] = [
                 {"title": rx},
                 {"description": rx},
@@ -92,14 +91,21 @@ def create_app():
         if status:
             criteria["status"] = status
 
-        # projection + sort + limit
-        projection = {"title": 1, "status": 1, "location": 1, "date_event": 1, "description": 1}
-        cursor = app.mongo["items"].find(criteria, projection).sort("_id", -1).limit(25)
+        projection = {"title": 1, "status": 1, "location": 1, "created_at": 1, "description": 1}
+
+        # sort by created_at descending order
+        cursor = (
+            db["items"]
+            .find(criteria, projection)
+            .sort([("created_at", -1), ("_id", -1)])
+            .limit(25)
+        )
+
         items = list(cursor)
-        
+        #string ids for links
         for it in items:
             it["sid"] = str(it["_id"])
-            
+
         return render_template("search.html", items=items, q=q, status=status)
 
     @app.errorhandler(Exception)
