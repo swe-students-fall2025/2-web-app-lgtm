@@ -76,8 +76,37 @@ def create_app():
 
     @app.route("/search")
     def search():
-        # TODO: search title/description/location (case-insensitive) render results.
-        return render_template("search.html")
+        q = (request.args.get("q") or "").strip()
+        status = (request.args.get("status") or "").strip().lower()
+
+        criteria = {}
+        if q:
+            # case-insensitive
+            rx = {"$regex": q, "$options": "i"}  
+            criteria["$or"] = [
+                {"title": rx},
+                {"description": rx},
+                {"location": rx},
+            ]
+        if status:
+            criteria["status"] = status
+
+        projection = {"title": 1, "status": 1, "location": 1, "created_at": 1, "description": 1}
+
+        # sort by created_at descending order
+        cursor = (
+            db["items"]
+            .find(criteria, projection)
+            .sort([("created_at", -1), ("_id", -1)])
+            .limit(25)
+        )
+
+        items = list(cursor)
+        #string ids for links
+        for it in items:
+            it["sid"] = str(it["_id"])
+
+        return render_template("search.html", items=items, q=q, status=status)
 
     @app.errorhandler(Exception)
     def handle_error(e):
