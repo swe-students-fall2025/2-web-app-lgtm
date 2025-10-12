@@ -29,8 +29,11 @@ def create_app():
 
     @app.route("/")
     def home():
-        # TODO: list up to 10 recent items with title/status/location and link to details.
-        return render_template("index.html")
+        # list 10 recent items
+        if db is not None:
+            collection = db["items"]
+            items = collection.find().sort("created_at", -1).limit(10)        
+        return render_template("index.html", items = items)
 
     @app.route("/report", methods=["GET", "POST"])
     def report():

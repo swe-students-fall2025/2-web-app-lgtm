@@ -2,5 +2,18 @@
 {% block title %}Home{% endblock %}
 {% block content %}
 <h2>Recent posts</h2>
-<p>TODO: list up to 10 recent items with title, status, location, and a link to details.</p>
+
+{% if items %}
+    <ul>
+        {% for item in items %}
+            <li>
+                <a href="{{ url_for('detail', post_id=item._id)}}">{{item.title}}</a>
+                
+                ({{item.status}}) - {{item.location}}
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No lost items reported yet</p>
+{% endif %}
 {% endblock %}
