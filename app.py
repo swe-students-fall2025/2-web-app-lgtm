@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
 import os
+from datetime import datetime, timezone
+
 from flask import Flask, render_template, request, redirect, url_for
 import pymongo
 from bson.objectid import ObjectId
 from dotenv import load_dotenv, dotenv_values
-from datetime import datetime, timezone
+
 
 load_dotenv()  # load environment variables from .env
 db = None
@@ -42,12 +44,12 @@ def create_app():
         if db is not None:
             cursor = (
                 db["items"]
-                .find({}, {"title": 1, "status":1,"location":1,"created_at":1})
+                .find({}, {"title": 1, "status": 1, "location": 1, "created_at": 1})
                 .sort("created_at", -1)
                 .limit(10)
             )
-            items = list(cursor)    
-        return render_template("index.html", items = items)
+            items = list(cursor)
+        return render_template("index.html", items=items)
 
     @app.route("/report", methods=["GET", "POST"])
     def report():

@@ -34,7 +34,7 @@
           </a>
           — {{ it.status|default('unknown') }}
           @ {{ it.location|default('unspecified') }}
-          {% if it.created_at %} • {{ it.created_at }}{% endif %}
+          {% if it.created_at %} • {{ it.created_at.strftime('%Y-%m-%d %I:%M %p') }}{% endif %}
           {% if it.description %}<br><small>{{ it.description }}</small>{% endif %}
         </li>
       {% endfor %}
