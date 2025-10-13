@@ -74,8 +74,16 @@ def create_app():
 
     @app.route("/item/<post_id>")
     def detail(post_id):
-        # TODO: load item by ObjectId(post_id) and render all fields from the report and show message if not found.
-        return render_template("detail.html", post_id=post_id)
+        try:
+            doc = db["items"].find_one({"_id": ObjectId(post_id)})
+        except Exception:
+            doc = None
+
+        if not doc:
+            return render_template("error.html", error="Item not found"), 404
+
+        back_url = request.referrer or url_for("home")
+        return render_template("detail.html", item=doc, back_url=back_url)
 
     @app.route("/search")
     def search():
