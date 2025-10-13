@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 
 load_dotenv()  # load environment variables from .env
 db = None
+db_connected = False
 
 
 def create_app():
@@ -23,17 +24,24 @@ def create_app():
             cxn = pymongo.MongoClient(uri, serverSelectionTimeoutMS=2000)
             db = cxn[dbname]
             cxn.admin.command("ping")
+            db_connected = True
             print(" * Connected to MongoDB")
         except Exception as e:
             print(" * MongoDB not ready yet:", e)
+            db_connected = False
+
+    @app.before_request
+    def check_db_connection():
+        if not db_connected:
+            return render_template("offline.html"), 503
 
     @app.route("/")
     def home():
         # list 10 recent items
         if db is not None:
             collection = db["items"]
-            items = collection.find().sort("created_at", -1).limit(10)        
-        return render_template("index.html", items = items)
+            items = collection.find().sort("created_at", -1).limit(10)
+        return render_template("index.html", items=items)
 
     @app.route("/report", methods=["GET", "POST"])
     def report():
@@ -93,7 +101,7 @@ def create_app():
         criteria = {}
         if q:
             # case-insensitive
-            rx = {"$regex": q, "$options": "i"}  
+            rx = {"$regex": q, "$options": "i"}
             criteria["$or"] = [
                 {"title": rx},
                 {"description": rx},
@@ -102,7 +110,13 @@ def create_app():
         if status:
             criteria["status"] = status
 
-        projection = {"title": 1, "status": 1, "location": 1, "created_at": 1, "description": 1}
+        projection = {
+            "title": 1,
+            "status": 1,
+            "location": 1,
+            "created_at": 1,
+            "description": 1,
+        }
 
         # sort by created_at descending order
         cursor = (
@@ -113,7 +127,7 @@ def create_app():
         )
 
         items = list(cursor)
-        #string ids for links
+        # string ids for links
         for it in items:
             it["sid"] = str(it["_id"])
 
@@ -121,8 +135,7 @@ def create_app():
 
     @app.errorhandler(Exception)
     def handle_error(e):
-        # TODO: keep this simple for debugging during dev
-        return render_template("error.html", error=e)
+        return render_template("error.html", error=f"{e.__class__.__name__}: {e}"), 500
 
     return app
 
