@@ -30,9 +30,15 @@ def create_app():
     @app.route("/")
     def home():
         # list 10 recent items
+        items = []
         if db is not None:
-            collection = db["items"]
-            items = collection.find().sort("created_at", -1).limit(10)        
+            cursor = (
+                db["items"]
+                .find({}, {"title": 1, "status":1,"location":1,"created_at":1})
+                .sort("created_at", -1)
+                .limit(10)
+            )
+            items = list(cursor)    
         return render_template("index.html", items = items)
 
     @app.route("/report", methods=["GET", "POST"])
