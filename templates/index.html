@@ -12,8 +12,8 @@
         <div>Status : {{item.status}}</div>
         <div>Location : {{item.location}}</div>
 
-        {% if item.created_at %} 
-        <div>Date : {{item.created_at.strftime('%Y-%m-%d at %H:%M %p')}}</div>
+        {% if item.created_at %}
+            <div>Date : {{ item.created_at.strftime('%Y-%m-%d %I:%M %p') }}</div>
         {% endif %}
 
         <form action="{{url_for('detail', post_id=item._id) }}" method="get">

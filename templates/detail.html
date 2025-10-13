@@ -10,7 +10,10 @@
 
   <p><strong>Status:</strong> {{ item.status }}</p>
   <p><strong>Location:</strong> {{ item.location }}</p>
-  {% if item.created_at %}<p><strong>Posted:</strong> {{ item.created_at }}</p>{% endif %}
+
+  {% if item.created_at %}
+    <p><strong>Posted:</strong> {{ item.created_at.strftime('%Y-%m-%d %I:%M %p') }}</p>
+  {% endif %}
 
   <h3>Description:</h3>
   <p class="desc">
