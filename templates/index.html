@@ -3,17 +3,23 @@
 {% block content %}
 <h2>Recent posts</h2>
 
-{% if items %}
-    <ul>
-        {% for item in items %}
-            <li>
-                <a href="{{ url_for('detail', post_id=item._id)}}">{{item.title}}</a>
-                
-                ({{item.status}}) - {{item.location}}
-            </li>
-        {% endfor %}
-    </ul>
-{% else %}
+{% if items | length == 0 %}
     <p>No lost items reported yet</p>
+{% else %}
+    {% for item in items %}
+    <fieldset>
+        <legend>{{ item.title}}</legend>
+        <div>Status : {{item.status}}</div>
+        <div>Location : {{item.location}}</div>
+
+        {% if item.created_at %} 
+        <div>Date : {{item.created_at.strftime('%Y-%m-%d at %H:%M %p')}}</div>
+        {% endif %}
+
+        <form action="{{url_for('detail', post_id=item._id) }}" method="get">
+            <button type="submit">View</button>
+        </form>
+    </fieldset>
+    {% endfor %}
 {% endif %}
 {% endblock %}
