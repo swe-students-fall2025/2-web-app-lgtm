@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Item details{% endblock %}
+{% block content %}
+<div class="item-card">
+  <h2>{{ item.title }}</h2>
+
+  {% if item.image_url %}
+    <img class="item-img" src="{{ item.image_url }}" alt="Item image">
+  {% endif %}
+
+  <p><strong>Status:</strong> {{ item.status }}</p>
+  <p><strong>Location:</strong> {{ item.location }}</p>
+  {% if item.created_at %}<p><strong>Posted:</strong> {{ item.created_at }}</p>{% endif %}
+
+  <h3>Description:</h3>
+  <p class="desc">
+    {% if item.description %}{{ item.description }}{% else %}No description.{% endif %}
+  </p>
+
+  {% if item.contact_email %}
+    <p><strong>Contact:</strong>
+      <a class="btn" href="mailto:{{ item.contact_email }}">{{ item.contact_email }}</a>
+    </p>
+  {% endif %}
+
+  <p><a class="link" href="{{ back_url }}">Back</a></p>
+</div>
+{% endblock %}

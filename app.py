@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 
 load_dotenv()  # load environment variables from .env
 db = None
+db_connected = False
 
 
 def create_app():
@@ -23,9 +24,16 @@ def create_app():
             cxn = pymongo.MongoClient(uri, serverSelectionTimeoutMS=2000)
             db = cxn[dbname]
             cxn.admin.command("ping")
+            db_connected = True
             print(" * Connected to MongoDB")
         except Exception as e:
             print(" * MongoDB not ready yet:", e)
+            db_connected = False
+
+    @app.before_request
+    def check_db_connection():
+        if not db_connected:
+            return render_template("offline.html"), 503
 
     @app.route("/")
     def home():
@@ -80,8 +88,16 @@ def create_app():
 
     @app.route("/item/<post_id>")
     def detail(post_id):
-        # TODO: load item by ObjectId(post_id) and render all fields from the report and show message if not found.
-        return render_template("detail.html", post_id=post_id)
+        try:
+            doc = db["items"].find_one({"_id": ObjectId(post_id)})
+        except Exception:
+            doc = None
+
+        if not doc:
+            return render_template("error.html", error="Item not found"), 404
+
+        back_url = request.referrer or url_for("home")
+        return render_template("detail.html", item=doc, back_url=back_url)
 
     @app.route("/search")
     def search():
@@ -91,7 +107,7 @@ def create_app():
         criteria = {}
         if q:
             # case-insensitive
-            rx = {"$regex": q, "$options": "i"}  
+            rx = {"$regex": q, "$options": "i"}
             criteria["$or"] = [
                 {"title": rx},
                 {"description": rx},
@@ -100,7 +116,13 @@ def create_app():
         if status:
             criteria["status"] = status
 
-        projection = {"title": 1, "status": 1, "location": 1, "created_at": 1, "description": 1}
+        projection = {
+            "title": 1,
+            "status": 1,
+            "location": 1,
+            "created_at": 1,
+            "description": 1,
+        }
 
         # sort by created_at descending order
         cursor = (
@@ -111,7 +133,7 @@ def create_app():
         )
 
         items = list(cursor)
-        #string ids for links
+        # string ids for links
         for it in items:
             it["sid"] = str(it["_id"])
 
@@ -119,8 +141,7 @@ def create_app():
 
     @app.errorhandler(Exception)
     def handle_error(e):
-        # TODO: keep this simple for debugging during dev
-        return render_template("error.html", error=e)
+        return render_template("error.html", error=f"{e.__class__.__name__}: {e}"), 500
 
     return app
 
