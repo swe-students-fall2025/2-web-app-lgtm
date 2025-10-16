@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block content %}
+<h2>Sign in</h2>
+<form method="post">
+  <p>Email:<br><input type="email" name="email" required></p>
+  <p>Password:<br><input type="password" name="password" required></p>
+  <p><button type="submit">Sign in</button></p>
+</form>
+{% if error %}<p style="color:red">{{ error }}</p>{% endif %}
+<p><a href="{{ url_for('signup') }}">Create an account</a></p>
+{% endblock %}
