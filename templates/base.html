@@ -9,7 +9,13 @@
   <p>
     <a href="{{ url_for('home') }}">Home</a> |
     <a href="{{ url_for('report') }}">Report</a> |
-    <a href="{{ url_for('search') }}">Search</a>
+    <a href="{{ url_for('search') }}">Search</a> |
+    {% if current_user.is_authenticated %}
+      <span>Hi {{ current_user.name or current_user.email }}</span> |
+      <a href="{{ url_for('logout') }}">Sign out</a>
+    {% else %}
+      <a href="{{ url_for('login') }}">Sign in</a> |
+    {% endif %}
   </p>
   {% block content %}{% endblock %}
 </body>

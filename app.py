@@ -2,6 +2,15 @@
 
 import os
 from datetime import datetime, timezone
+from flask_login import (
+    LoginManager,
+    UserMixin,
+    login_user,
+    logout_user,
+    current_user,
+    login_required,
+)
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from flask import Flask, render_template, request, redirect, url_for
 import pymongo
@@ -18,6 +27,7 @@ def create_app():
     # Create and configure Flask app
     app = Flask(__name__)
     app.config.from_mapping(dotenv_values())
+    app.secret_key = os.getenv("SECRET_KEY", "dev-secret-change-me")
 
     uri = os.getenv("MONGO_URI")
     dbname = os.getenv("MONGO_DBNAME")
@@ -37,6 +47,24 @@ def create_app():
         if not db_connected:
             return render_template("offline.html"), 503
 
+    login_manager = LoginManager()
+    login_manager.login_view = "login"
+    login_manager.init_app(app)
+
+    class User(UserMixin):
+        def __init__(self, doc):
+            self.id = str(doc["_id"])
+            self.email = doc.get("email", "")
+            self.name = doc.get("name", "")
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        try:
+            doc = db["users"].find_one({"_id": ObjectId(user_id)})
+            return User(doc) if doc else None
+        except Exception:
+            return None
+
     @app.route("/")
     def home():
         # list 10 recent items
@@ -50,6 +78,48 @@ def create_app():
             )
             items = list(cursor)
         return render_template("index.html", items=items)
+
+    @app.route("/signup", methods=["GET", "POST"])
+    def signup():
+        if request.method == "POST":
+            name = (request.form.get("name") or "").strip()
+            email = (request.form.get("email") or "").strip().lower()
+            password = request.form.get("password") or ""
+            if not name or not email or not password:
+                return render_template("signup.html", error="All fields are required.")
+            if db["users"].find_one({"email": email}):
+                return render_template("signup.html", error="Email already registered.")
+            doc = {
+                "name": name,
+                "email": email,
+                "password_hash": generate_password_hash(password),
+                "created_at": datetime.utcnow(),
+            }
+            res = db["users"].insert_one(doc)
+            user = User({**doc, "_id": res.inserted_id})
+            login_user(user)
+            return redirect(url_for("home"))
+        return render_template("signup.html")
+
+    @app.route("/login", methods=["GET", "POST"])
+    def login():
+        if request.method == "POST":
+            email = (request.form.get("email") or "").strip().lower()
+            password = request.form.get("password") or ""
+            doc = db["users"].find_one({"email": email})
+            if not doc or not check_password_hash(
+                doc.get("password_hash", ""), password
+            ):
+                return render_template("login.html", error="Invalid email or password.")
+            login_user(User(doc))
+            return redirect(url_for("home"))
+        return render_template("login.html")
+
+    @app.route("/logout")
+    @login_required
+    def logout():
+        logout_user()
+        return redirect(url_for("home"))
 
     @app.route("/report", methods=["GET", "POST"])
     def report():
@@ -82,6 +152,14 @@ def create_app():
                 "created_at": datetime.now(timezone.utc),
                 "updated_at": datetime.now(timezone.utc),
             }
+
+            # assign owner to the item
+            owner_id = current_user.get_id() if current_user.is_authenticated else None
+            owner_email = (
+                current_user.email if current_user.is_authenticated else contact_email
+            )
+            item.update({"owner_id": owner_id, "owner_email": owner_email})
+
             db["items"].insert_one(item)
 
             return redirect(url_for("home"))
