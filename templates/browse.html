@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Browse{% endblock %}
+{% block content %}
+<h2>Browse</h2>
+
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px">
+  <a class="tab {% if (status or '') == '' %}active{% endif %}"
+     href="{{ url_for('browse', status='', location=location) }}">Any</a>
+
+  <a class="tab {% if (status or '') == 'lost' %}active{% endif %}"
+     href="{{ url_for('browse', status='lost', location=location) }}">Lost</a>
+
+  <a class="tab {% if (status or '') == 'found' %}active{% endif %}"
+     href="{{ url_for('browse', status='found', location=location) }}">Found</a>
+
+  <a class="tab {% if (status or '') == 'resolved' %}active{% endif %}"
+     href="{{ url_for('browse', status='resolved', location=location) }}">Resolved</a>
+</div>
+
+<form method="get" style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:8px">
+  <input type="hidden" name="status" value="{{ status or '' }}">
+  <div style="min-width:220px;flex:1">
+    <label for="location">Location:</label>
+    <select id="location" name="location">
+      <option value="" {{ '' == (location or '') and 'selected' or '' }}>Any location</option>
+      {% for loc in locations %}
+        <option value="{{ loc }}" {{ (location or '') == loc and 'selected' or '' }}>{{ loc }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button type="submit" class="btn">Apply</button>
+</form>
+
+<h3>Results ({{ items|length }})</h3>
+
+{% if items|length == 0 %}
+  <p>No matches.</p>
+{% else %}
+  <div class="grid">
+    {% for it in items %}
+      <div class="card">
+        <div class="card-title">{{ it.title }}</div>
+        <div class="meta">
+          {{ it.status }} • {{ it.location }}
+          {% if it.created_at %} • {{ it.created_at.strftime('%Y-%m-%d %I:%M %p') }}{% endif %}
+        </div>
+        <a class="btn" href="{{ url_for('detail', post_id=it.sid) }}">View</a>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

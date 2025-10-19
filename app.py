@@ -223,6 +223,50 @@ def create_app():
 
         return render_template("search.html", items=items, q=q, status=status)
 
+    @app.route("/browse")
+    def browse():
+        #location dropdown from existing items
+        locations = []
+        if db is not None:
+            try:
+                locations = sorted([v for v in db["items"].distinct("location") if v])
+            except Exception:
+                locations = []
+
+        status = (request.args.get("status") or "").strip().lower()
+        location = (request.args.get("location") or "").strip()
+
+        #Back link
+        session["back_url"] = url_for("browse", status=status, location=location)
+
+        criteria = {}
+        if status in {"lost", "found", "resolved"}:
+            criteria["status"] = status
+        if location:
+            criteria["location"] = location
+
+        projection = {"title": 1, "status": 1, "location": 1, "created_at": 1}
+
+        items = []
+        if db is not None:
+            cursor = (
+                db["items"]
+                .find(criteria, projection)
+                .sort([("created_at", -1), ("_id", -1)])
+                .limit(50)
+            )
+            items = list(cursor)
+            for it in items:
+                it["sid"] = str(it["_id"])
+
+        return render_template(
+            "browse.html",
+            items=items,
+            status=status,
+            location=location,
+            locations=locations,
+        )
+
     @app.route("/item/<post_id>/edit", methods=["GET", "POST"])
     @login_required
     def edit(post_id):
