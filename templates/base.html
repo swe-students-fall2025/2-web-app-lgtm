@@ -19,7 +19,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;  /* pushes auth to the right */
-      flex-wrap: wrap;                  /* may wrap on very small screens */
+      flex-wrap: wrap; /* may wrap on very small screens */
       gap: 8px;
       margin-bottom: 12px;
     }
@@ -29,10 +29,11 @@
     /* page tabs */
     .tab {
       display: inline-block;
-      padding: 6px 10px;               /* slightly smaller so they fit one row */
+      padding: 6px 10px; /* slightly smaller so they fit one row */
       border: 1px solid #ccc;
       border-radius: 6px;
     }
+    .tab.active { border-color:#333; font-weight:600; }
 
     /* auth links: plain text look */
     .auth-link { text-decoration: underline; }
@@ -48,7 +49,28 @@
     img { max-width: 100%; height: auto; display: block; }
 
     .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-    .btn { display: inline-block; padding: 10px 14px; border: 1px solid #222; border-radius: 6px; }
+    
+    .btn {
+      display: inline-block;
+      padding: 10px 14px;
+      border: 1px solid #222;
+      border-radius: 6px;
+      background: #fff;
+      color: #111;
+      text-decoration: none;
+    }
+    .btn:hover { text-decoration: none; }
+    button.btn {
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+    }
+
+    .btn-danger {
+      border-color: #a00;
+      color: #a00;
+      background: #fff;
+    }
   </style>
 </head>
 <body>
@@ -58,7 +80,7 @@
         <a class="tab" href="{{ url_for('home') }}">Home</a>
         <a class="tab" href="{{ url_for('report') }}">Report</a>
         <a class="tab" href="{{ url_for('search') }}">Search</a>
-        <a class="tab" href="{{ url_for('home') }}">Browse</a>
+        <a class="tab" href="{{ url_for('browse') }}">Browse</a>
       </div>
       <div class="nav-right">
         {% if current_user.is_authenticated %}
