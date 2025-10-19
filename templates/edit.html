@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Edit item{% endblock %}
+{% block content %}
+<h2>Edit item</h2>
+
+{% if error %}<p style="color:red">{{ error }}</p>{% endif %}
+
+<form method="post">
+  <p>
+    <label for="title">Title:</label><br>
+    <input id="title" name="title" type="text" value="{{ item.title }}" required>
+  </p>
+
+  <p>
+    <label for="status">Status:</label><br>
+    <select id="status" name="status">
+      <option value="lost" {{ 'selected' if item.status=='lost' else '' }}>Lost</option>
+      <option value="found" {{ 'selected' if item.status=='found' else '' }}>Found</option>
+      <option value="resolved" {{ 'selected' if item.status=='resolved' else '' }}>Resolved</option>
+    </select>
+  </p>
+
+  <p>
+    <label for="location">Location:</label><br>
+    <input id="location" name="location" type="text" value="{{ item.location }}" required>
+  </p>
+
+  <p>
+    <label for="description">Description:</label><br>
+    <textarea id="description" name="description" rows="4">{{ item.description }}</textarea>
+  </p>
+
+  <p>
+    <label for="contact_name">Contact name:</label><br>
+    <input id="contact_name" name="contact_name" type="text" value="{{ item.contact_name }}">
+  </p>
+
+  <p>
+    <label for="contact_email">Contact email:</label><br>
+    <input id="contact_email" name="contact_email" type="email" value="{{ item.contact_email }}" required>
+  </p>
+
+  <p>
+    <label for="image_url">Image URL (optional):</label><br>
+    <input id="image_url" name="image_url" type="text" value="{{ item.image_url }}">
+  </p>
+
+  <p>
+    <button type="submit">Save</button>
+    <a href="{{ cancel_url }}">Cancel</a>
+  </p>
+</form>
+{% endblock %}
