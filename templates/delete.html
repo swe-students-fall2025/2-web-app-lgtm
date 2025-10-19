@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %} Confirm Deletion - {{item.title}} {% endblock %}
+
+{%block content %}
+    <h2>Confirm Deletion</h2>
+
+        <p>Are you sure you want to delete <strong>"{{ item.title }}"</strong>?</p>
+
+    <form method="post" class="actions">
+        <button type="submit" class="btn btn-danger">Delete</button>
+        <a class="btn" href="{{ cancel_url }}">Cancel</a>
+        <a class="btn" href="{{ back_url }}">Back to list</a>
+    </form>
+{%endblock%}

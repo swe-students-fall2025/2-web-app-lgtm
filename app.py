@@ -325,6 +325,36 @@ def create_app():
             cancel_url=url_for("detail", post_id=post_id),
         )
 
+    @app.route("/item/<post_id>/delete", methods=["GET", "POST"])
+    @login_required
+    def delete(post_id):
+        try:
+            # validate post_id
+            obj_id = ObjectId(post_id)
+        except InvalidId:
+            abort(404)
+        
+        # fetch the item 
+        item = db["items"].find_one({"_id": obj_id})
+        if not item:
+            return render_template("error.html", error="Item not found"), 404
+        
+        # check ownership
+        if str(item.get("owner_id")) != current_user.get_id():
+            return render_template("error.html", error="Not Allowed!!"), 403
+        
+        # delete on the item
+        if request.method == "POST":
+            db["items"].delete_one({"_id": item["_id"]})
+            return redirect(session.get("back_url", url_for("home")))
+
+        return render_template(
+            "delete.html",
+            item=item,
+            cancel_url=url_for("detail", post_id=post_id),
+            back_url=session.get("back_url", url_for("home"))
+        )
+
     @app.errorhandler(Exception)
     def handle_error(e):
         return render_template("error.html", error=f"{e.__class__.__name__}: {e}"), 500
