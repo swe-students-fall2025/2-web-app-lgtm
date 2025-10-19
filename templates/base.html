@@ -4,19 +4,74 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{% endblock %}</title>
+
+  <style>
+    /* simple mobile-friendly styles kept inline */
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 16px; font-family: system-ui, Arial, sans-serif; line-height: 1.4; }
+    a { text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .container { max-width: 720px; margin: 0 auto; }
+
+    /* nav layout: tabs on left, auth on right */
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;  /* pushes auth to the right */
+      flex-wrap: wrap;                  /* may wrap on very small screens */
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .nav-left { display: flex; gap: 8px; flex-wrap: wrap; }
+    .nav-right { display: flex; gap: 12px; align-items: center; }
+
+    /* page tabs */
+    .tab {
+      display: inline-block;
+      padding: 6px 10px;               /* slightly smaller so they fit one row */
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    /* auth links: plain text look */
+    .auth-link { text-decoration: underline; }
+    .hello { color: #555; }
+
+    /* basic form/list helpers (kept minimal) */
+    label { font-weight: 600; }
+    input, select, textarea {
+      width: 100%; padding: 8px; margin: 6px 0 14px;
+      border: 1px solid #ccc; border-radius: 4px;
+    }
+    textarea { resize: vertical; }
+    img { max-width: 100%; height: auto; display: block; }
+
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .btn { display: inline-block; padding: 10px 14px; border: 1px solid #222; border-radius: 6px; }
+  </style>
 </head>
 <body>
-  <p>
-    <a href="{{ url_for('home') }}">Home</a> |
-    <a href="{{ url_for('report') }}">Report</a> |
-    <a href="{{ url_for('search') }}">Search</a> |
-    {% if current_user.is_authenticated %}
-      <span>Hi {{ current_user.name or current_user.email }}</span> |
-      <a href="{{ url_for('logout') }}">Sign out</a>
-    {% else %}
-      <a href="{{ url_for('login') }}">Sign in</a> |
-    {% endif %}
-  </p>
-  {% block content %}{% endblock %}
+  <div class="container">
+    <nav class="nav">
+      <div class="nav-left">
+        <a class="tab" href="{{ url_for('home') }}">Home</a>
+        <a class="tab" href="{{ url_for('report') }}">Report</a>
+        <a class="tab" href="{{ url_for('search') }}">Search</a>
+        <a class="tab" href="{{ url_for('home') }}">Browse</a>
+      </div>
+      <div class="nav-right">
+        {% if current_user.is_authenticated %}
+          <span class="hello">Hi {{ current_user.name or current_user.email }}</span>
+          <a class="auth-link" href="{{ url_for('logout') }}">Sign out</a>
+        {% else %}
+          <a class="auth-link" href="{{ url_for('login') }}">Sign in</a>
+          <a class="auth-link" href="{{ url_for('signup') }}">Sign up</a>
+        {% endif %}
+      </div>
+    </nav>
+
+    {% block content %}{% endblock %}
+  </div>
 </body>
 </html>

@@ -4,19 +4,19 @@
 {% block content %}
 <h2>Search</h2>
 
-<form action="{{ url_for('search') }}" method="get" style="display:flex;gap:.5rem;flex-wrap:wrap">
-  <!-- text input for keyword -->
-  <input type="text" name="q" value="{{ q or '' }}" placeholder="Try: airpods"
-         style="flex:1;min-width:220px;padding:.5rem" />
+<form action="{{ url_for('search') }}" method="get">
+  <label for="q">Keywords</label>
+  <input id="q" type="text" name="q" value="{{ q or '' }}" placeholder="Try: airpods">
 
-  <!-- status filter -->
-  <select name="status" style="padding:.5rem">
+  <label for="status">Status</label>
+  <select id="status" name="status">
     <option value="" {{ '' == (status or '') and 'selected' or '' }}>Any status</option>
     <option value="lost" {{ (status or '') == 'lost' and 'selected' or '' }}>Lost</option>
     <option value="found" {{ (status or '') == 'found' and 'selected' or '' }}>Found</option>
+    <option value="resolved" {{ (status or '') == 'resolved' and 'selected' or '' }}>Resolved</option>
   </select>
 
-  <button type="submit" style="padding:.5rem 1rem">Search</button>
+  <button type="submit" class="tab">Search</button>
 </form>
 
 {% if items is defined %}
@@ -26,10 +26,9 @@
     <p>No matches.</p>
   {% else %}
     <ul>
-      {# matches “Passing array data to templates” from notes #}
       {% for it in items %}
-        <li>
-          <a href="{{ url_for('detail', post_id=it.sid) }}">
+        <li style="margin-bottom:12px">
+          <a href="{{ url_for('detail', post_id=it.sid, back=url_for('search', q=q, status=status)) }}">
             <strong>{{ it.title }}</strong>
           </a>
           — {{ it.status|default('unknown') }}

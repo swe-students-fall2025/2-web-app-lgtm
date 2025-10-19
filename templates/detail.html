@@ -21,11 +21,14 @@
   </p>
 
   {% if item.contact_email %}
-    <p><strong>Contact:</strong>
-      <a class="btn" href="mailto:{{ item.contact_email }}">{{ item.contact_email }}</a>
-    </p>
+    <p><strong>Contact:</strong> <a href="mailto:{{ item.contact_email }}">{{ item.contact_email }}</a></p>
   {% endif %}
 
-  <p><a class="link" href="{{ back_url }}">Back</a></p>
+  <div class="actions">
+    {% if current_user.is_authenticated and current_user.id == item.owner_id %}
+      <a class="btn" href="{{ url_for('edit', post_id=item._id) }}">Edit</a>
+    {% endif %}
+    <a class="btn" href="{{ back_url }}">Back</a>
+  </div>
 </div>
 {% endblock %}
