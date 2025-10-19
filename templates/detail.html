@@ -27,6 +27,7 @@
   <div class="actions">
     {% if current_user.is_authenticated and current_user.id == item.owner_id %}
       <a class="btn" href="{{ url_for('edit', post_id=item._id) }}">Edit</a>
+      <a class="btn btn-danger" href="{{ url_for('delete', post_id=item._id) }}">Delete</a>
     {% endif %}
     <a class="btn" href="{{ back_url }}">Back</a>
   </div>
