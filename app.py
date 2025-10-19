@@ -12,7 +12,7 @@ from flask_login import (
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 import pymongo
 from bson.objectid import ObjectId
 from dotenv import load_dotenv, dotenv_values
@@ -68,6 +68,7 @@ def create_app():
     @app.route("/")
     def home():
         # list 10 recent items
+        session["back_url"] = url_for("home")
         items = []
         if db is not None:
             cursor = (
@@ -176,13 +177,16 @@ def create_app():
         if not doc:
             return render_template("error.html", error="Item not found"), 404
 
-        back_url = request.referrer or url_for("home")
+        back_url = session.get("back_url", url_for("home"))
         return render_template("detail.html", item=doc, back_url=back_url)
 
     @app.route("/search")
     def search():
         q = (request.args.get("q") or "").strip()
         status = (request.args.get("status") or "").strip().lower()
+
+        # remember this exact search page for the Back link
+        session["back_url"] = url_for("search", q=q, status=status)
 
         criteria = {}
         if q:
@@ -218,6 +222,64 @@ def create_app():
             it["sid"] = str(it["_id"])
 
         return render_template("search.html", items=items, q=q, status=status)
+
+    @app.route("/item/<post_id>/edit", methods=["GET", "POST"])
+    @login_required
+    def edit(post_id):
+        # load the item
+        try:
+            doc = db["items"].find_one({"_id": ObjectId(post_id)})
+        except Exception:
+            doc = None
+        if not doc:
+            return render_template("error.html", error="Item not found"), 404
+
+        # only the owner can edit
+        owner_id = str(doc.get("owner_id")) if doc.get("owner_id") is not None else None
+        if current_user.get_id() != owner_id:
+            return render_template("error.html", error="Not allowed"), 403
+
+        if request.method == "POST":
+            title = (request.form.get("title") or "").strip()
+            status = (request.form.get("status") or "").strip().lower()
+            location = (request.form.get("location") or "").strip()
+            description = (request.form.get("description") or "").strip()
+            contact_name = (request.form.get("contact_name") or "").strip()
+            contact_email = (request.form.get("contact_email") or "").strip()
+            image_url = (request.form.get("image_url") or "").strip()
+
+            if not title or not location or not contact_email:
+                return render_template(
+                    "edit.html",
+                    item=doc,
+                    error="Title, location, and contact email are required.",
+                    cancel_url=url_for("detail", post_id=post_id),
+                )
+
+            # allow lost/found/resolved on edit
+            if status not in ("lost", "found", "resolved"):
+                status = doc.get("status", "lost")
+
+            update = {
+                "title": title,
+                "status": status,
+                "location": location,
+                "description": description,
+                "contact_name": contact_name,
+                "contact_email": contact_email,
+                "image_url": image_url,
+                "updated_at": datetime.now(timezone.utc),
+            }
+
+            db["items"].update_one({"_id": doc["_id"]}, {"$set": update})
+            return redirect(url_for("detail", post_id=post_id))
+
+        # GET → prefilled form
+        return render_template(
+            "edit.html",
+            item=doc,
+            cancel_url=url_for("detail", post_id=post_id),
+        )
 
     @app.errorhandler(Exception)
     def handle_error(e):
