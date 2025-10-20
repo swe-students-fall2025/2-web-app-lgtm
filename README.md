@@ -21,7 +21,9 @@ A small campus lost & found web app so students can report, browse, search, edit
   *(Optional: You can use a virtual environment such as `venv` or `pipenv` to isolate dependencies.)*
 
 - Start MongoDB (for example using Docker Desktop or a local MongoDB instance).  
-  The database must be running and accessible at `mongodb://localhost:27017`.
+  The database must be running and accessible at `mongodb://localhost:27017`.  
+  For convenience, you can start a MongoDB container using Docker with this command:  
+  `docker run -d --name mongo-lostfound -p 27017:27017 mongo:latest`
 
 - Create a copy of the provided `env.example` file and rename it to `.env`.  
   Update the values as needed for your local environment.
