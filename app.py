@@ -225,7 +225,7 @@ def create_app():
 
     @app.route("/browse")
     def browse():
-        #location dropdown from existing items
+        # location dropdown from existing items
         locations = []
         if db is not None:
             try:
@@ -236,7 +236,7 @@ def create_app():
         status = (request.args.get("status") or "").strip().lower()
         location = (request.args.get("location") or "").strip()
 
-        #Back link
+        # Back link
         session["back_url"] = url_for("browse", status=status, location=location)
 
         criteria = {}
@@ -318,7 +318,7 @@ def create_app():
             db["items"].update_one({"_id": doc["_id"]}, {"$set": update})
             return redirect(url_for("detail", post_id=post_id))
 
-        # GET → prefilled form
+        # GET render the template
         return render_template(
             "edit.html",
             item=doc,
@@ -328,31 +328,29 @@ def create_app():
     @app.route("/item/<post_id>/delete", methods=["GET", "POST"])
     @login_required
     def delete(post_id):
+        # find the item
         try:
-            # validate post_id
-            obj_id = ObjectId(post_id)
-        except InvalidId:
-            abort(404)
-        
-        # fetch the item 
-        item = db["items"].find_one({"_id": obj_id})
-        if not item:
+            doc = db["items"].find_one({"_id": ObjectId(post_id)})
+        except Exception:
+            doc = None
+        if not doc:
             return render_template("error.html", error="Item not found"), 404
-        
-        # check ownership
-        if str(item.get("owner_id")) != current_user.get_id():
-            return render_template("error.html", error="Not Allowed!!"), 403
-        
-        # delete on the item
+
+        # only the owner can delete
+        owner_id = str(doc.get("owner_id")) if doc.get("owner_id") is not None else None
+        if current_user.get_id() != owner_id:
+            return render_template("error.html", error="Not allowed"), 403
+
         if request.method == "POST":
-            db["items"].delete_one({"_id": item["_id"]})
+            db["items"].delete_one({"_id": doc["_id"]})
             return redirect(session.get("back_url", url_for("home")))
 
+        # GET so show confirm page
         return render_template(
             "delete.html",
-            item=item,
+            item=doc,
             cancel_url=url_for("detail", post_id=post_id),
-            back_url=session.get("back_url", url_for("home"))
+            back_url=session.get("back_url", url_for("home")),
         )
 
     @app.errorhandler(Exception)

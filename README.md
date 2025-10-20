@@ -13,20 +13,22 @@ A small campus lost & found web app so students can report, browse, search, edit
 ## Steps necessary to run the software
 
 - Clone this repository  
+- Make sure you have **Python 3.10+** installed.
 
 - Install the required Python packages  
   - On Windows: `pip install -r requirements.txt`  
-  - On macOS: `python3 -m pip install -r requirements.txt`
+  - On macOS: `python3 -m pip install -r requirements.txt`  
+  *(Optional: You can use a virtual environment such as `venv` or `pipenv` to isolate dependencies.)*
 
-- Start MongoDB (for example using Docker Desktop or a local MongoDB instance)  
-  Ensure MongoDB is running on `localhost:27017` before starting the app.
+- Start MongoDB (for example using Docker Desktop or a local MongoDB instance).  
+  The database must be running and accessible at `mongodb://localhost:27017`.
 
-- Create a copy of the provided `env.example` file and rename it to `.env`.
-  Update values if necessary for your local environment.
+- Create a copy of the provided `env.example` file and rename it to `.env`.  
+  Update the values as needed for your local environment.
 
 - Run the Flask app  
-  - On Windows: `python app.py`
-  - On macOS: `python3 app.py`
+  - On Windows: `python app.py`  
+  - On macOS: `python3 app.py`  
   - or `flask run` for both
 
 - Open a browser and go to  
@@ -35,3 +37,5 @@ A small campus lost & found web app so students can report, browse, search, edit
 ## Task boards
 
 [lgtm - Sprint 1](https://github.com/orgs/swe-students-fall2025/projects/9)
+
+[lgtm - Sprint 2](https://github.com/orgs/swe-students-fall2025/projects/40)
